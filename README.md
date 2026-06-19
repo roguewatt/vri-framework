@@ -190,7 +190,7 @@ GB Zone A. A prediction is issued at 08:15 to forecast load for the next three s
 - **Check**: input-compliant.
 
 ### Example 3: Two Zones, Two Days Each (MIMO)
-Zone A and Zone B are forecast two days ahead.
+Zone A and Zone B are forecast for each of the next two days.
 - **I/O Schema**: MIMO.
 - **Multi-horizon**: 2.
 - **Reference Time**: 2026-06-19 03:00.
@@ -309,7 +309,7 @@ https://docs.databricks.com/aws/en/machine-learning/feature-store/time-series
 Accessed 2026-06-19.  
 https://docs.tecton.ai/docs/reading-feature-data/reading-feature-data-for-training/constructing-training-data
 
-[3] **Simha Raprolu, N.** (2023). "Chronon — A Declarative Feature Engineering Framework." *Airbnb Engineering Blog.*  
+[3] **Simha, N.** (2023). "Chronon — A Declarative Feature Engineering Framework." *Airbnb Engineering Blog.*  
 Accessed 2026-06-19.  
 https://medium.com/airbnb-engineering/chronon-a-declarative-feature-engineering-framework-b7b8ce796e04
 
@@ -352,5 +352,4 @@ Licensed under the [Apache License 2.0](LICENSE).
   author       = {Fan Zhang},
   title        = {VRI: A Governance and Auditing Convention for Production Forecasting},
   year         = {2026},
-  howpublished = {\url{https://github.com/Fan/vri-framework}}
-}
+  howpublished = {\url{https://github.com/roguewatt/vri-framework}}}
