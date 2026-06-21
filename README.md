@@ -92,8 +92,9 @@ Cutoff does not replace Reference Time.
 Training samples are constructed using the same input eligibility rule as inference.
 
 For each training sample:
+
 - A historical point on the Target Valid Time axis is assigned as the sample's Reference Time.
-- Every input record satisfies `Input Record Issue Time ≤ Reference Time`.
+- Every input record used by the sample satisfies `Issue Time ≤ Reference Time`.
 - The label is the realised value corresponding to the sample's Target Valid Time.
 - The label may be issued after the Reference Time and is attached later as an outcome for model fitting.
 - The model architecture, such as XGBoost, MLP, TCN, or LSTM, is independent of VRI.
@@ -108,9 +109,9 @@ For each input series, the forecasting strategy must define which eligible recor
 
 Historical training samples must reproduce the source-specific availability state that existed at each sample's Reference Time. Later publications, revisions, corrected values, or backfilled observations must not be used unless they were already eligible at that Reference Time.
 
-For a regular time grid with labels available immediately at their Target Valid Times, the following may be useful:
+For a regular half-hourly schedule with labels available immediately at their Target Valid Times, the following may be useful:
 
-`Latest Training Reference Time = Cutoff − Maximum Horizon × Time Step`
+`Latest Training Reference Time = Cutoff − Maximum Horizon × 30 minutes`
 
 However, this formula is not general. If labels are published later, revised asynchronously, or governed by an irregular Forecast Schedule, the actual inclusion condition is:
 
@@ -118,7 +119,7 @@ However, this formula is not general. If labels are published later, revised asy
 
 The core VRI eligibility rule remains unchanged for every input record:
 
-`Input Record Issue Time ≤ Sample Reference Time`
+`Issue Time ≤ Sample Reference Time`
 
 ---
 
@@ -127,7 +128,7 @@ The core VRI eligibility rule remains unchanged for every input record:
 Testing follows the same input eligibility rule as training. The model is evaluated by simulating historical inferences or running live predictions.
 
 - Each test sample or inference has its own Reference Time.
-- Only input records satisfying `Input Record Issue Time ≤ Reference Time` are eligible.
+- Only input records satisfying `Issue Time ≤ Reference Time` are eligible.
 - Future covariates are allowed when their record versions were issued by the Reference Time.
 - Realised target values are never used as model inputs.
 - Realised targets are used only for scoring after predictions have been generated.
@@ -144,6 +145,7 @@ The resulting predictions are aligned with their Target Valid Times and scored a
 Multiple-inference evaluation is the standard structure for out-of-sample backtesting.
 
 It is orthogonal to multi-horizon:
+
 - one inference may produce one or multiple horizons;
 - an evaluation may contain multiple inferences;
 - each inference may use a single-horizon or multi-horizon output structure.
@@ -162,22 +164,22 @@ The horizon represents an ordered position in the applicable Forecast Schedule. 
 Multi-horizon is independent of the number of semantic input and output series.
 
 ### I/O Schema
-SISO, SIMO, MISO, and MIMO are established classifications for describing the number of inputs and outputs in a system.
 
-In forecasting, they can describe the number of semantic input and output series involved in a prediction.
+SISO, SIMO, MISO, and MIMO describe the logical input and output structure presented to a model.
 
-- **SISO**: single input series, single output series
-- **SIMO**: single input series, multiple output series
-- **MISO**: multiple input series, single output series
-- **MIMO**: multiple input series, multiple output series
+- **SISO**: single input, single output
+- **SIMO**: single input, multiple outputs
+- **MISO**: multiple inputs, single output
+- **MIMO**: multiple inputs, multiple outputs
 
-A series means a semantic series, not an engineered feature column or an individual forecast horizon.
+Inputs and outputs may represent different semantic series or separately constructed model dimensions.
 
-Multi-horizon is therefore orthogonal to the I/O schema.
+A jointly generated multi-horizon target may therefore form a special MIMO structure when its horizons are represented as separate output dimensions. In this case, the multiple outputs belong to the same semantic target series but resolve to different Target Valid Times.
 
-Some forecasting literature also uses MIMO to describe a joint multi-step forecasting strategy. That usage concerns how multiple horizons are generated.
+Multi-horizon and I/O schema describe different aspects of the model:
 
-The I/O classification used here retains the established systems meaning: multiple inputs and multiple outputs.
+- **Multi-horizon** describes the temporal coverage of the outputs.
+- **I/O schema** describes the logical input and output structure presented to the model.
 
 ---
 
