@@ -32,7 +32,7 @@ Each revision or forecast release is a separate record version with its own Issu
 
 ### Reference Time
 
-Reference Time is the temporal anchor of a sample or inference. It is a timestamp that defines the information state for that sample or inference.
+Reference Time is the temporal anchor of a sample or inference. It is the timestamp that defines the information state from which the sample's forecast outputs are produced.
 
 Each sample or inference has one Reference Time.
 
@@ -40,7 +40,7 @@ Any input used by the sample must satisfy:
 
 `Issue Time ≤ Reference Time`
 
-For example, consider a half-hourly solar-generation model using `Solar Radiation Forecast` and `Cloud Cover Forecast` as input features, with a MIMO output covering `HH0`, `HH1`, and `HH2`.
+For example, consider a half-hourly solar-generation model using `Solar Radiation Forecast` and `Cloud Cover Forecast` as input features. The model jointly produces `HH0`, `HH1`, and `HH2` as separate outputs. This forms a MIMO structure in which the multiple outputs represent different horizons of the same target series.
 
 The final training row constructed by the I/O builder may be:
 
@@ -48,13 +48,13 @@ The final training row constructed by the I/O builder may be:
 | :--- | ---: | ---: | ---: | ---: | ---: |
 | 08:00 | 320 W/m² | 65% | 110 MW | 145 MW | 180 MW |
 
-The first testing row is constructed with the same input structure, but its outputs are not yet known:
+The first testing input row contains the same input features, but no realised target outputs:
 
 | Reference Time | Solar Radiation Forecast | Cloud Cover Forecast |
 | :--- | ---: | ---: |
 | 08:30 | 410 W/m² | 48% |
 
-After inference, the MIMO model returns three outputs for that testing row:
+After inference, the model produces three outputs for that testing row:
 
 | Reference Time | Predicted Solar Generation HH0 | Predicted Solar Generation HH1 | Predicted Solar Generation HH2 |
 | :--- | ---: | ---: | ---: |
