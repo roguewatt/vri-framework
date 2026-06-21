@@ -31,31 +31,44 @@ The time at which a record or prediction becomes available to its intended consu
 Each revision or forecast release is a separate record version with its own Issue Time.
 
 ### Reference Time
-Reference Time is the anchor on the Target Valid Time axis associated with one sample or inference input.
 
-Each sample or inference has its own Reference Time. A technical job may process multiple samples or inferences, each with a different Reference Time, individually or together in a batch.
+Reference Time is the temporal anchor of a sample or inference. It is a timestamp that defines the information state for that sample or inference.
 
-For every input record, the following rule applies:
+Each sample or inference has one Reference Time.
 
-`Input Record Issue Time ≤ Reference Time`
+Any input used by the sample must satisfy:
 
-This rule applies to both:
-- past covariates, such as realised observations; and
-- future covariates, such as forecasts describing Valid Times after the Reference Time.
+`Issue Time ≤ Reference Time`
 
-Reference Time therefore represents the information state that one sample or inference is entitled to use.
+For example, consider a half-hourly solar-generation model using `Solar Radiation Forecast` and `Cloud Cover Forecast` as input features, with a MIMO output covering `HH0`, `HH1`, and `HH2`.
 
-Labels are not input records. Their realised values may become available after the Reference Time and are attached later for training or scoring. They are not included in the input eligibility check.
+The final training row constructed by the I/O builder may be:
 
-For each forecast output, Target Valid Time is resolved by applying the configured horizon to the applicable Forecast Schedule, using Reference Time as the schedule anchor.
+| Reference Time | Solar Radiation Forecast | Cloud Cover Forecast | Solar Generation HH0 | Solar Generation HH1 | Solar Generation HH2 |
+| :--- | ---: | ---: | ---: | ---: | ---: |
+| 08:00 | 320 W/m² | 65% | 110 MW | 145 MW | 180 MW |
 
-The horizon represents an ordered position in the Forecast Schedule and does not necessarily represent a fixed elapsed duration.
+The first testing row is constructed with the same input structure, but its outputs are not yet known:
 
-For a regular time grid, this reduces to:
+| Reference Time | Solar Radiation Forecast | Cloud Cover Forecast |
+| :--- | ---: | ---: |
+| 08:30 | 410 W/m² | 48% |
 
-`Target Valid Time = Reference Time + Horizon × Time Step`
+After inference, the MIMO model returns three outputs for that testing row:
 
-This is only a special case of the general schedule-based rule. For business-day, market-defined, irregular, or event-based forecasts, the applicable scheduling rule determines the actual Target Valid Time.
+| Reference Time | Predicted Solar Generation HH0 | Predicted Solar Generation HH1 | Predicted Solar Generation HH2 |
+| :--- | ---: | ---: | ---: |
+| 08:30 | 150 MW | 190 MW | 225 MW |
+
+The Forecast Schedule then maps those outputs to their Target Valid Times:
+
+| Reference Time | Horizon | Target Valid Time | Solar Generation Forecast |
+| :--- | :--- | :--- | ---: |
+| 08:30 | HH0 | 08:30 | 150 MW |
+| 08:30 | HH1 | 09:00 | 190 MW |
+| 08:30 | HH2 | 09:30 | 225 MW |
+
+Reference Time therefore defines the information state from which every forecast output for that sample or inference is produced. The Forecast Schedule resolves each output to its Target Valid Time using Reference Time as the schedule anchor.
 
 ### Cutoff
 Cutoff is the global data boundary applied to one dataset construction, training run, backtest, or inference job.
